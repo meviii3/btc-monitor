@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+
+    <title>Bitcoin figyelő alkalmazás</title>
+
+    <script src="apex/apexcharts.min.js"></script>
+    <script>
+        //Változók
+        var currentPriceInHuf;
+
+        // HTTP kérés
+        var b = new XMLHttpRequest();
+        b.open('get', 'https://api.coindesk.com/v1/bpi/currentprice/huf.json');
+        b.send();
+        b.onreadystatechange = function (res) {
+            if(this.status == 200 && this.readyState == 4 && res.target.response) {
+
+                let currentData = JSON.parse(res.target.response).bpi;
+                currentPriceInHuf = currentData['HUF'].rate;
+                console.log(currentPriceInHuf)
+                document.querySelector('#currentPriceInHuf').innerHTML = currentPriceInHuf.toString().replace(',', ' ').replace(',', ' ').split('.')[0] + ' Ft';
+            }
+        }
+
+        // HTTP kérés
+        var a = new XMLHttpRequest();
+        a.open('get', 'https://api.coindesk.com/v1/bpi/historical/close.json?currency=huf');
+        a.send();
+        a.onreadystatechange = function (res) {
+            if(this.status == 200 && this.readyState == 4 && res.target.response) {
+
+                let datas = JSON.parse(res.target.response).bpi;
+                console.log(datas);
+
+                let options = {
+                    series: [
+                        {
+                            name: "Forint",
+                            data: Object.values(datas).map(x => Math.round(x))
+                        }
+                    ],
+                    chart: 
+                    {
+                    type: 'area',
+                    height: 350,
+                    zoom: {
+                        enabled: false
+                    }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        curve: 'straight'
+                    },
+                    
+                    title: {
+                        text: 'Bitcoin árfolyamának alakulása az elmúlt 1 hónapban:',
+                        align: 'left'
+                    },
+    
+                    labels: Object.keys(datas),
+                    xaxis: {
+                        type: 'string'
+                    },
+                    yaxis: {
+                        opposite: false,
+                        title: {
+                            text: 'Forint'
+                        }
+
+
+                    },
+                    legend: {
+                        horizontalAlign: 'left'
+                    }
+                };
+
+                var chart = new ApexCharts(document.querySelector("#chart"), options);
+                chart.render();
+            }
+        };
+    </script>
+</head>
+<body>
+    <div style="width: 100%; text-align: center;">
+        <h1>Herczku Éva</h1>
+        <h4>Bitcoin figyelő alkalmazás</h4>        
+    </div>
+
+    <div id="chart"></div>
+<hr>
+    <div style="margin: 5rem auto; width: 24rem; text-align: center;">
+        <h2>Bitcoin jelenlegi árfolyama</h2>
+        <h1 style="font-size: 4rem;" id="currentPriceInHuf"></h1>        
+    </div>
+
+</body>
+</html>
